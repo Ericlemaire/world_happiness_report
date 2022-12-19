@@ -10,9 +10,7 @@ Created on Sat Oct  1 20:24:50 2022
 
 import pandas as pd 
 import numpy as np
-import seaborn as sns 
 import streamlit as st 
-import seaborn as sns 
 import matplotlib.pyplot as plt 
 import plotly.express as px 
 import geopandas as gpd
@@ -28,7 +26,6 @@ from streamlit_shap import st_shap
 shap.initjs()
 
 import pydeck as pdk
-from osgeo import gdal
 #gdal.SetConfigOption('SHAPE_RESTORE_SHX', 'YES')
 
 
@@ -366,7 +363,7 @@ elif page == pages[3]:
 Nous avons ensuite représenté la distribution des erreurs grâce à un histogramme complété par une courbe de densité, et une boîte à moustache. Les erreurs suivent à peu près une loi normale. La distribution des erreurs montre plusieurs valeurs extrêmes.
 Maintenant que nous avons entraîné un modèle de référence, nous allons passer à la modalisation avec l’ensemble de nos variables afin de voir si nous pouvons construire un modèle plus performant et plus riche. 
                 """)
-    st.image("df_modélisation_univariée.jpg")    
+    st.image("df_modelisation_univariee.jpg")    
 
     st.image("AdobeStock_303401576.jpeg", width = 500)
 
@@ -375,7 +372,7 @@ Maintenant que nous avons entraîné un modèle de référence, nous allons pass
     
     st.markdown("La table ci-dessous résume l’ensemble des métriques utilisées pour l’ensemble des modèles entraînés. Elle présente également les hyperparamètres retenus par la recherche sur grille." )
 # Mettre image ... table
-    st.image("dfmétriques.jpg")    
+    st.image("dfmetriques.jpg")    
 
     #from PIL import Image
    # image = Image.open('df modélisation univariée')
@@ -386,12 +383,12 @@ Maintenant que nous avons entraîné un modèle de référence, nous allons pass
 
     st.markdown("Comme évoqué plus haut, les graphiques ci-dessous montrent comment les deux modèles les plus performants en termes de coefficient de détermination se détachent sur les autres métriques également. Le lecteur pourra remarquer que le modèle SVR donne des résultats tout à fait médiocre pour toutes les métriques. Si le modèle XGBoost est le plus performant, nous pouvons remarquer que le Random Forest est tout à fait proche.")
 # Mettre image 4 métriques  
-    st.image("métriques_suite.jpg")    
+    st.image("metriques_suite.jpg")    
 
     st.markdown("Afin de compléter la comparaison entre les modèles les plus performants, nous avons examiné la distribution des résidus pour les modèles XGBoost et Random Forest. Nous pouvons constater que le XGBoost présente une distribution des erreurs plus concentrée, plus symétrique, avec moins de valeurs extrêmes. ")
 # Distribution des erreurs XGboost et RF
     st.image("distresidus1.jpg")    
-    st.image("distrésidus2.jpg")    
+    st.image("distresidus2.jpg")
 
     st.markdown("Compte tenu des éléments de comparaison présentés, c’est le modèle XGBoost qui a été retenu pour la phase d’interprétation avec la bibliothèque Shap.")
  
@@ -548,9 +545,9 @@ elif page == pages[4]:
 
 
     #st.dataframe(X.loc[option_force_plot])
-    shap.initjs()
+    #shap.initjs()
 
-    st_shap(shap.force_plot(exp.expected_value, vals, X))
+    #st_shap(shap.force_plot(exp.expected_value, vals, X))
 
 
 # MULTISELECTION DE PAYS
