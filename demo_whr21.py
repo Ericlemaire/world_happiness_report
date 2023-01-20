@@ -10,6 +10,7 @@ Created on Sat Oct  1 20:24:50 2022
 
 import pandas as pd 
 import numpy as np
+import seaborn as sns
 import streamlit as st 
 import matplotlib.pyplot as plt 
 import plotly.express as px 
@@ -26,6 +27,7 @@ from streamlit_shap import st_shap
 shap.initjs()
 
 import pydeck as pdk
+from osgeo import gdal
 #gdal.SetConfigOption('SHAPE_RESTORE_SHX', 'YES')
 
 
@@ -37,9 +39,14 @@ import pydeck as pdk
 st.title("Les déterminants de la satisfaction des populations dans le monde ")
 st.markdown("#### _Essai de construction d’un modèle allant au-delà d’une approche fondée sur le niveau de richesse par habitant_")
 st.caption("Fait par Éric Lemaire et Rabbia Touré")
+st.caption("[Profil LinkedIn d'Éric LEMAIRE](https://www.linkedin.com/in/eric-lemaire-data-scientist/)")
 
+st.caption("[Profil LinkedIn de Rabbia TOURÉ](https://www.linkedin.com/in/rabiatouc-toure/)")
+
+st.caption("Vous avez des suggestions d'améliorations, des idées, vous souhaitez échanger sur ce projet ? Écrivez-nous : elemaire@teamtrust.fr")
 #st.image("AdobeStock_103209330.jpeg", width = 500)
 
+st.caption("[Accéder au rapport complet du projet](https://docs.google.com/document/d/13fVdWos7I6F9gAN1kPf31MigMF7WPZyjtc3lGZM9GJY/edit?usp=sharing) ")
 
 
 # CHARGEMENT ET OUVERTURE DU DATAFRAME PRINCIPAL
@@ -158,7 +165,7 @@ elif page == pages[2]:
    st.image("AdobeStock_291576437.jpeg",width=600)
 
    st.subheader("Jeu de données")
-   st.write("Nous présentons ici un jeu de donnée légèrement réduit en nombre de variable afin que l'utilisateur puisse s'y retrouver plus aisément.")
+   st.write("Nous présentons ici un jeu de donnée légèrement réduit en nombre de variables afin que l'utilisateur puisse s'y retrouver plus aisément.")
    
    
    st.dataframe(df)
@@ -171,12 +178,12 @@ elif page == pages[2]:
    #st.dataframe(df[options_df])
 
    st.subheader("Éléments statistiques")
-
+   st.write("Dans le tableau ci-dessous, vous pouvez retrouver la moyenne, l'écart-type (std), la valeur minimale, maximale,la médiane (50%), ainsi que les premier et troisième quartiles de la distribution de chaque variable.")
 
 # AFFICHAGE DES VALEURS de VARIABLES (Moyenne, st, Min, Max) 
    option_metric = st.selectbox(
     'Quelle variable voulez-vous explorer ?',options = df.columns[3:])
-# ADAPTER
+
    col1, col2, col3, col4 = st.columns(4)
    col1.metric("moyenne", df.mean().round(1)[option_metric])
    col2.metric("Max", df[option_metric].round().max())
@@ -185,6 +192,7 @@ elif page == pages[2]:
 
 
    st.write("Résumé des principales statistiques")
+# Affichage du tableau résumant les principales statistiques des variables
    st.dataframe(df.describe())
    #st.metric(label=f"{option_metric} moyenne", value= df.mean().round(1)[option_metric], delta= None)
 
@@ -203,6 +211,8 @@ elif page == pages[2]:
 
    #df = pd.read_csv('df_modélisationWHR')
    #df = df.drop("Unnamed: 0", axis = 1)
+
+# Préparation du jeu de données géopsptiale avec les données à représenter
    gpd = gpd.read_file('custom.geo-2.json')
 
    gpd["sovereignt"]= gpd["sovereignt"].str.upper()
@@ -222,9 +232,11 @@ elif page == pages[2]:
    import plotly.express as px
    import geopandas as gpd
 
+# Création de la boîte de sélectiond es variables à représenter géographiquement
    carto_option = st.selectbox(
     'Avec quelle variable voulez-vous colorer le monde ?', options = df.columns[1:])
-    
+
+# Création et affichage de la carte
    fig = px.choropleth_mapbox(gpd_merged,
                            geojson=gpd_merged.geometry,
                            locations=gpd_merged.index,
@@ -232,7 +244,6 @@ elif page == pages[2]:
                            center={"lat": 20.5517, "lon": -5.7073},
                            mapbox_style="open-street-map",
                            zoom=0.5)
-
 
    st.plotly_chart(fig, use_container_width=False)
 
@@ -253,16 +264,17 @@ elif page == pages[2]:
   #   st.dataframe(df.isna().sum())
   
    st.write("Les hisogrammes permettent de représenter la forme de la distribution des variables.")
+   
+   # Bouton d'option pour les histogrammes
    option_hist_1 = st.selectbox(
    'Quelle variable voulez-vous visualiser en ordonnée ?', options = df.columns[3:])
-   
-  
-   #option_hist_2 = st.selectbox(
+    #option_hist_2 = st.selectbox(
    #'Comment voulez-vous grouper vos données?',options = ['Région du monde', 'Régime politique'])
    group_labels = [option_hist_1] # name of the dataset
 
    #hist_surv = ff.create_distplot(option_hist_1, group_labels)
 
+# Création de l'histogramme 
    hist_surv = px.histogram(df, x = option_hist_1, nbins=20) #, color = option_hist_2,  barmode = "group")
  
    st.plotly_chart(hist_surv)
@@ -284,7 +296,7 @@ elif page == pages[2]:
    
    st.subheader("Visualiser les relations entre variables")
    
-   st.markdown("Explorez les relations entre variables du jeu de données en choisissant les variables à faire apparaître en ordonnée, en abscisse, et en couleur.")
+   st.markdown("Explorez les relations entre variables du jeu de données en choisissant les variables à faire apparaître en ordonnée, en abscisse, et en couleur. Jouer avec les variables permet de reprérer visuellement des corrélations. Vous pouvez ensuite tester votre intuition en réalisant le test de Pearson.")
 
    option_1 = st.selectbox(
     'Quelle variable voulez-vous visualiser en ordonnée pour le nuage de points?',options = df.columns[3:])
@@ -311,23 +323,22 @@ elif page == pages[2]:
             La p-value indique la probabilité que la relation entre les deux variables soit due au hasard. Plus la p-value est faible, plus faible est la probabilité que la le lien entre les variable soit du au hasard. 
             Le plus souvent, on estime que si la p-value est inférieur à 5%, le lien est significatif.""")
    st.write("___")
+  
    from scipy.stats import pearsonr
+  
+# Suppression des valeurs manquantes    
    df_test = df.dropna()
+# Bouton de sélection des variables à tester
    option_test_1 = st.selectbox(
      'Test statistique : variable 1',options = df_test.columns[3:])
    option_test_2 = st.selectbox(
      'Test statistique : variable 2',options = df_test.columns[3:])
 
-   
+# Réalisation du test de Pearson et création du dataframe de présentation des résultats
    test = pd.DataFrame(pearsonr(df_test[option_test_1],df_test[option_test_2]), index=['pearson_coeff','p-value'], columns=['resultat_test'])
    st.write(test)
 
-   #col1, col2 = st.columns(2)
-   #col1.metric("Coéfficient de Pearson", test[0].astype(float))
-   #col2.metric("P-valeur", test[1].astype(float))
-   
-
-
+ 
 
 
 
@@ -388,7 +399,7 @@ Maintenant que nous avons entraîné un modèle de référence, nous allons pass
     st.markdown("Afin de compléter la comparaison entre les modèles les plus performants, nous avons examiné la distribution des résidus pour les modèles XGBoost et Random Forest. Nous pouvons constater que le XGBoost présente une distribution des erreurs plus concentrée, plus symétrique, avec moins de valeurs extrêmes. ")
 # Distribution des erreurs XGboost et RF
     st.image("distresidus1.jpg")    
-    st.image("distresidus2.jpg")
+    st.image("distresidus2.jpg")    
 
     st.markdown("Compte tenu des éléments de comparaison présentés, c’est le modèle XGBoost qui a été retenu pour la phase d’interprétation avec la bibliothèque Shap.")
  
@@ -396,15 +407,19 @@ Maintenant que nous avons entraîné un modèle de référence, nous allons pass
 elif page == pages[4]: 
 
     st.markdown("## Interprétation des prédictions du modèle")
-# Faut-il entraîner le modèle pour les prédictions ? 
-# Charger y ?    
+
+ 
+# Chargement du mdoèle     
     xgb_whr = load('xgb_whr.joblib')
-    
+# Chargmeent du jeu de données
     X = pd.read_csv("X_whr.csv")
+# Suppression d'une colonne inutile
     X= X.drop(['Unnamed: 0'], axis = 1)
+# Réalisation des prédictions du modèle
     xgb_whr.predict(X)
 
 
+# Changement du nom des colonnes 
 
     col={"CN": "Pays", 
      "RI": "Région du monde", 
@@ -427,7 +442,12 @@ elif page == pages[4]:
      "FCIV": "Libertés civiles",
      "FEXPR": "Liberté d'expression",
      "SCOm": "Nombre moyen d'années de scolarisation",
-     "GINI": "Indice de GINI"}
+     "GINI": "Indice de GINI",
+     "MONFO": "Monopole usage de la force",
+     "EDPOL": "Politique R&D",
+     "POLCOOR": "Coordination des politiques",
+     "NIRD": "Non intrusion de la religion en politique",
+     "REFF": "Efficience des ressources"}
     X = X.rename(columns=col)
 
 
@@ -439,6 +459,9 @@ elif page == pages[4]:
     #st.header(f"la prédiction pour le pays : {pays} est :")
     #st.write(pred)
     #st.write('---')
+
+
+# Création des valeurs de Shapley 
 
     exp = shap.TreeExplainer(xgb_whr) 
     vals = exp.shap_values(X)
@@ -463,14 +486,19 @@ elif page == pages[4]:
     
 
     st.subheader("SHAP Scatter Plot")
+  
     st.image("AdobeStock_374487966.jpeg", width = 400)
-    st.write("Le graphique de dépendance permet de comprendre comment une variable donnée influence les prédictions en fonction de sa valeur. Les points représentent les observations (pays). En ordonnée, sont données les valeurs de shapley, c'est-à-dire l'influence (positive ou négative) de la variable sur la prédiction de la variable cible. En abscisse, on troue les valeurs prises par la varible dans le jeu de données. Il est également possible de colorer les points en fonction d'une autre variable.")
-    st.write("Il se lit de la façon suivante ...")
+    st.write("Le graphique de dépendance permet de comprendre comment une variable donnée influence les prédictions en fonction de sa valeur. Les points représentent les observations (pays). En ordonnée, sont données les valeurs de shapley, c'est-à-dire l'influence (positive ou négative) de la variable sur la prédiction de la variable cible. En abscisse, on trouve les valeurs prises par la varible dans le jeu de données. Il est également possible de colorer les points en fonction d'une autre variable.")
+   # st.write("Il se lit de la façon suivante ...")
+
+# Création de la figure
     fig, ax = plt.subplots()
-    
+ 
+    # Création du bouton qui permet de sélectionner des pays   
     option_dependance_plot = st.selectbox(
      'De quelle variable voulez-vous visualiser l''influence?', options = X.columns)
-    
+
+# Création du bouton qui permet de sélectionner des pays   
     option_dependancee_plot_2 = st.selectbox(
      'Avec quelle variable voulez-vous colorer les points ?', options = X.columns)
 
@@ -486,8 +514,8 @@ elif page == pages[4]:
     st.image("AdobeStock_423722898.jpeg", width=300)
 
     st.markdown("""Le graphique 'force_plot' de SHAP permet de clarifier l'importance des variables dans la prédiction faite par l'algorithme. 
-                En rose, sont indiquées les variables qui contribuent à accroître la prédiction, tandis que les variables minimisant la prédiction sont colorés en bleu. 
-                Sont indiqués en sus les valeurs prises par les variables. 
+                En rose, sont indiquées les variables qui contribuent à accroître la prédiction, tandis que les variables minimisant la prédiction sont colorées en bleu. 
+                Sont indiquées en sus les valeurs prises par les variables. 
                 """)
     st.write("___")
     
@@ -545,9 +573,9 @@ elif page == pages[4]:
 
 
     #st.dataframe(X.loc[option_force_plot])
-    #shap.initjs()
+    shap.initjs()
 
-    #st_shap(shap.force_plot(exp.expected_value, vals, X))
+    st_shap(shap.force_plot(exp.expected_value, vals, X))
 
 
 # MULTISELECTION DE PAYS
@@ -607,3 +635,4 @@ else :
    
      
     st.image("AdobeStock_260037651.jpeg", width=700)
+    
