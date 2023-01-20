@@ -10,7 +10,6 @@ Created on Sat Oct  1 20:24:50 2022
 
 import pandas as pd 
 import numpy as np
-import seaborn as sns
 import streamlit as st 
 import matplotlib.pyplot as plt 
 import plotly.express as px 
@@ -27,7 +26,6 @@ from streamlit_shap import st_shap
 shap.initjs()
 
 import pydeck as pdk
-from osgeo import gdal
 #gdal.SetConfigOption('SHAPE_RESTORE_SHX', 'YES')
 
 
