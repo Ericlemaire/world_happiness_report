@@ -45,6 +45,7 @@ st.caption("Vous avez des suggestions d'améliorations, des idées, vous souhait
 #st.image("AdobeStock_103209330.jpeg", width = 500)
 
 st.caption("[Accéder au rapport complet du projet](https://docs.google.com/document/d/13fVdWos7I6F9gAN1kPf31MigMF7WPZyjtc3lGZM9GJY/edit?usp=sharing) ")
+st.caption("[Visiter le repo Github du projet](https://github.com/Ericlemaire/world_happiness_report)")
 
 
 # CHARGEMENT ET OUVERTURE DU DATAFRAME PRINCIPAL
